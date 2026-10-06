@@ -1,0 +1,292 @@
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #141416;
+  color: #d7d7db;
+  overflow: hidden;
+}
+button { font: inherit; }
+input, select { font: inherit; }
+
+.app { display: flex; flex-direction: column; height: 100%; }
+
+/* === Toolbar === */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: #1b1b1f;
+  border-bottom: 1px solid #33333a;
+}
+.toolbar h1 { font-size: 15px; margin: 0; font-weight: 600; }
+.tb-label { font-size: 11.5px; color: #8a8a94; }
+.tb-input {
+  background: #111114;
+  border: 1px solid #3a3a42;
+  color: #d7d7db;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+.tb-btn {
+  background: #2a2a31;
+  border: 1px solid #3f3f48;
+  color: #e2e2e6;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tb-btn:hover:not(:disabled) { background: #35353e; }
+.tb-btn:disabled { opacity: 0.4; cursor: default; }
+.tb-btn.primary { background: #2f6fed; border-color: #2f6fed; color: #fff; }
+.tb-btn.primary:hover:not(:disabled) { background: #3f7bf5; }
+.tb-spacer { flex: 1; }
+.tb-export { display: flex; align-items: center; gap: 4px; }
+.tb-export .tb-btn { padding: 6px 8px; }
+.tb-file { display: flex; align-items: center; gap: 6px; margin-left: 8px; }
+.tb-filename { font-size: 11.5px; color: #8a8a94; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-dirty { color: #ffb020; margin-right: 4px; }
+
+.main { display: flex; flex: 1; min-height: 0; }
+
+/* === Поле редактора === */
+.editor-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: #17171a;
+  background-image: radial-gradient(circle, #2c2c33 1px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+.editor-wrap svg { display: block; user-select: none; }
+.editor-wrap.panning { cursor: grabbing; }
+.editor-wrap.panning svg { cursor: grabbing; }
+
+.eq-rect { fill: #1e1e23; stroke: #3d3d46; stroke-width: 1.2; }
+.eq-header { cursor: grab; }
+.eq-header:active { cursor: grabbing; }
+.eq-head-rect { fill: #27272e; }
+.eq-title { fill: #ececf0; font-size: 13px; font-weight: 600; }
+.eq-grip { fill: #8a8a94; font-size: 13px; }
+.eq-row-line { stroke: #33333a; }
+.eq-row-text { fill: #c4c4cc; font-size: 12px; }
+.row-grip { cursor: grab; fill: #55555f; }
+.row-grip:hover { fill: #9a9aa4; }
+.row-grip:active { cursor: grabbing; }
+
+.port-hot-glyph { filter: drop-shadow(0 0 4px rgba(74, 144, 226, 0.8)); }
+.port:hover { } /* глиф подсвечивается напрямую через stroke */
+
+/* «куртка» объединённого кабеля под жилами */
+.wire-jacket { fill: none; stroke: #101013; stroke-width: 8; stroke-linecap: round; pointer-events: none; }
+.wire-stripe { fill: none; stroke-width: 2.4; stroke-dasharray: 14 8; stroke-linecap: round; pointer-events: none; }
+.wire { fill: none; stroke-width: 3; stroke-linecap: round; pointer-events: none; }
+.wire.cable-member { stroke-width: 4; }
+.wire.selected { stroke-width: 4.5; filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5)); }
+.wire-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
+.temp-wire { fill: none; stroke: #9a9aa4; stroke-width: 3; stroke-dasharray: 7 5; pointer-events: none; }
+
+/* === Мировая сетка === */
+.world-grid path { fill: none; pointer-events: none; }
+.grid-minor { stroke: #26262e; stroke-width: 0.6; }
+.grid-major { stroke: #34343e; stroke-width: 0.8; }
+
+/* === Контекстное меню === */
+.ctx-menu {
+  position: fixed;
+  z-index: 70;
+  background: #222228;
+  border: 1px solid #3d3d47;
+  border-radius: 9px;
+  padding: 5px;
+  min-width: 210px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  color: #e2e2e6;
+  font-size: 13px;
+}
+.ctx-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ctx-item:hover { background: #33333c; }
+.ctx-item.danger { color: #ff7b72; }
+.ctx-item .arrow { margin-left: auto; color: #8a8a94; }
+.ctx-item.ctx-disabled { color: #6a6a74; cursor: default; }
+.ctx-item.ctx-disabled:hover { background: transparent; }
+.ctx-sep { height: 1px; background: #3d3d47; margin: 4px 6px; }
+.ctx-sub {
+  display: none;
+  position: absolute;
+  left: calc(100% - 4px);
+  top: -5px;
+  background: #222228;
+  border: 1px solid #3d3d47;
+  border-radius: 9px;
+  padding: 5px;
+  min-width: 140px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+}
+.ctx-item:hover .ctx-sub { display: block; }
+
+/* === Панель кабеля === */
+.panel-resize {
+  flex-shrink: 0;
+  width: 5px;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.15s;
+}
+.panel-resize:hover, .panel-resize:active { background: #2f6fed; }
+.side-panel-wrap {
+  flex-shrink: 0;
+  display: flex;
+  background: #1a1a1f;
+  border-left: 1px solid #33333a;
+  min-height: 0;
+}
+.side-panel {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.side-panel h2 { margin: 0; font-size: 14px; }
+.sp-label { font-size: 11px; color: #8a8a94; display: block; margin-bottom: 3px; }
+.sp-input {
+  background: #111114;
+  border: 1px solid #3a3a42;
+  color: #d7d7db;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 11.5px;
+  width: 100%;
+}
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+/* Жила — одна компактная строка */
+.wire-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #33333a;
+  border-radius: 7px;
+  padding: 4px 6px;
+  background: #1d1d22;
+  flex-wrap: nowrap;
+}
+.wire-row .sp-input { padding: 3px 5px; font-size: 10.5px; }
+.wire-idx { font-size: 11px; color: #9a9aa4; flex-shrink: 0; min-width: 14px; text-align: right; }
+.wr-mark { width: 64px; flex-shrink: 0; }
+.wr-name { flex: 1 1 52px; min-width: 48px; }
+.wr-num { width: 40px; flex-shrink: 0; }
+.wr-tip { width: 88px; flex-shrink: 0; }
+.wr-color { width: 78px; flex-shrink: 0; }
+.wr-side { color: #8a8a94; font-size: 11px; flex-shrink: 0; }
+.wr-dash { color: #55555f; flex-shrink: 0; padding: 0 1px; }
+.color-dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+.rename-pop { position: fixed; z-index: 80; }
+.rename-pop input {
+  width: 230px;
+  background: #111114;
+  border: 1px solid #4a90e2;
+  color: #e8e8ec;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  outline: none;
+}
+
+.hint {
+  padding: 6px 14px;
+  background: #1b1b1f;
+  border-top: 1px solid #33333a;
+  color: #7c7c86;
+  font-size: 11.5px;
+}
+
+/* === Печать === */
+.print-root {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: #3f3f46;
+  overflow: auto;
+  padding: 18px;
+}
+.print-bar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+  z-index: 5;
+}
+.a4-sheet {
+  width: 297mm;
+  min-height: 210mm;
+  background: #fff;
+  color: #000;
+  margin: 14px auto;
+  padding: 5mm;
+  box-sizing: border-box;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+}
+.a4-frame {
+  width: auto;
+  min-height: 200mm;
+  border: 1.5px solid #000;
+  display: flex;
+  flex-direction: column;
+}
+.a4-body { flex: 1 1 auto; padding: 2mm 3mm 10mm 3mm; }
+.a4-title { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 4mm; }
+.a4-footer {
+  margin: auto 6mm 5mm 6mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1.5px solid #000;
+  padding-top: 2mm;
+}
+.a4-footer .doc { font-size: 11pt; font-weight: bold; }
+.a4-footer .page { font-size: 10pt; }
+table.gost { width: 100%; border-collapse: collapse; margin-top: 2mm; font-size: 9pt; table-layout: fixed; }
+table.gost th, table.gost td { border: 1px solid #000; padding: 1.2mm 2mm; text-align: center; overflow-wrap: anywhere; }
+/* широкая кабельная таблица (11 колонок) */
+table.gost-cable { font-size: 8pt; }
+table.gost-cable th, table.gost-cable td { padding: 1mm 1mm; }
+.ov-wire { fill: none; stroke-width: 2; }
+
+@page { size: A4 landscape; margin: 0; }
+@media print {
+  .no-print { display: none !important; }
+  .print-root { position: static; padding: 0; background: #fff; overflow: visible; }
+  /* лист чуть ниже страницы: границы и округления не должны разрывать страницу */
+  .a4-sheet {
+    box-shadow: none;
+    margin: 0;
+    width: 296mm;
+    height: 208mm;
+    min-height: 0;
+    page-break-after: always;
+    page-break-inside: avoid;
+  }
+  .a4-frame { min-height: 0; height: 198mm; }
+  /* схема листа размещения не должна переполнять фиксированный лист */
+  .placement-svg { max-height: 162mm; }
+}
