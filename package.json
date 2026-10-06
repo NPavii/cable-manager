@@ -1,0 +1,29 @@
+{
+  "name": "cable-manager",
+  "private": true,
+  "version": "1.1.0",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "electron": "electron .",
+    "dist": "npm run build && electron-packager . cable-manager --platform=win32 --arch=x64 --overwrite --out=release --ignore=\"^/release$\" --ignore=\"^/node_modules$\" --prune=false"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "electron": "^44.1.1",
+    "electron-packager": "^17.1.2",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4",
+    "vitest": "^3.2.4"
+  }
+}

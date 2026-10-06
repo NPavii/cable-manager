@@ -1,0 +1,12 @@
+# Зависимости и сборка
+node_modules/
+dist/
+
+# Сборки standalone (только исходники в репозитории)
+release/
+
+# Логи и временное
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
